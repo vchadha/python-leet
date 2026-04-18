@@ -14,6 +14,11 @@ A collection of solutions to programming puzzles implemented in Python.
 **Problem:** Solve a 9×9 Sudoku puzzle using backtracking.      
 **Complexity:** Worst-case exponential.     
 
+### 🪞 Mirror Distance
+**File:** `mirror_distance_int.py`        
+**Problem:** Calculate the absolute difference between an integer and its digit-reversed counterpart.      
+**Complexity:** O(log n) time, O(1) space.      
+
 ## Requirements
 
 - Python 3.13+
