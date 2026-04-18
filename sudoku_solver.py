@@ -96,11 +96,6 @@ class Solution:
             invalid = set(box_sets[i]) - Solution.POSSIBLE_CELL_VALUES
             if invalid:
                 raise ValueError(f"Invalid board: out-of-range value {list(invalid)[0]} in box {i}")
-
-            # Convert to sets for easier lookup
-            row_sets[i] = set(row_sets[i])
-            col_sets[i] = set(col_sets[i])
-            box_sets[i] = set(box_sets[i])
         
         return col_sets, row_sets, box_sets
 
