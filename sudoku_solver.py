@@ -145,6 +145,7 @@ class Solution:
         return False
 
 
+# Test cases
 # Create a single instance of the solution to run test cases
 solution = Solution()
 

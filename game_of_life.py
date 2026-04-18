@@ -2,10 +2,6 @@ class Solution:
     IS_ALIVE: int = 1
     IS_DEAD: int = 0
 
-    # TODO: new approach - compute what each cell should be in the next state
-    # and store that ONLY if it is different from the current state.
-    # dict of (i, j) -> new_value
-
     def gameOfLife(self, board: list[list[int]]) -> None:
         """
         Do not return anything, modify board in-place instead.
@@ -35,12 +31,18 @@ class Solution:
             board[i][j] = new_value
 
     def isAlive(self, board: list[list[int]], i: int, j: int) -> bool:
+        """
+        Check if a given cell is alive, treating out of bounds as dead
+        """
         if i < 0 or i >= len(board) or j < 0 or j >= len(board[0]):
             return False
         
         return board[i][j] == Solution.IS_ALIVE
 
     def countAliveNeighbors(self, board: list[list[int]], i: int, j: int) -> int:
+        """
+        Count the number of alive neighbors for a given cell
+        """
         num_alive_neighbors: int = 0
 
         # Check all 8 neighbors
@@ -53,8 +55,12 @@ class Solution:
 
         return num_alive_neighbors
         
+
+# Test cases
+# Create a single instance of the solution to run test cases
+solution = Solution()
+
 board = [[0,1,0],[0,0,1],[1,1,1],[0,0,0]]
 expected_board = [[0,0,0],[1,0,1],[0,1,1],[0,1,0]]
-solution = Solution()
 solution.gameOfLife(board)
 assert board == expected_board, f"Expected {expected_board} but got {board}"
