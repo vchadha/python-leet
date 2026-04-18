@@ -1,4 +1,4 @@
-# Python Programming Puzzles
+# Programming Puzzles
 
 A collection of solutions to programming puzzles.
 
