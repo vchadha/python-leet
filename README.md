@@ -24,6 +24,11 @@ A collection of solutions to programming puzzles.
 **Problem:** Find the indices of two numbers in an array that add up to a target value.      
 **Complexity:** O(n) time, O(n) space.     
 
+### ➕ Add Two Numbers
+**File:** `python/add_two_numbers.py`        
+**Problem:** Add two numbers represented by reversed linked lists and return the sum as a linked list.      
+**Complexity:** O(max(m, n)) time, O(max(m, n)) space.     
+
 ## Requirements
 
 - Python
