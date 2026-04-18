@@ -33,15 +33,11 @@ class Solution:
 
                 # If I am alive
                 if self.isAlive(old_board, i, j):
-                    # If neighbors < 2 -> die
-                    if num_alive_neighbors < 2:
+                    # Underpopulation or overpopulation leads to death
+                    if num_alive_neighbors < 2 or num_alive_neighbors > 3:
                         board[i][j] = Solution.IS_DEAD
-                    # TODO: I could remove this condition since it is redundant
-                    elif num_alive_neighbors == 2 or num_alive_neighbors == 3:
-                        board[i][j] = Solution.IS_ALIVE
-                    # Overpopulation leads to death
-                    else:
-                        board[i][j] = Solution.IS_DEAD
+                    # Else -> no-op
+
                 # If I am dead
                 else:
                     # I can ressurect!
