@@ -1,6 +1,6 @@
 # Python Programming Puzzles
 
-A collection of solutions to programming puzzles implemented in Python.
+A collection of solutions to programming puzzles.
 
 ## Solutions
 
@@ -26,5 +26,6 @@ A collection of solutions to programming puzzles implemented in Python.
 
 ## Requirements
 
-- Python 3.13+
-- No external dependencies required
+- Python
+  - Python 3.13+
+  - No external dependencies required

@@ -8,7 +8,10 @@
 !.github/
 
 # Whitelist source files and documentation
-!*.py
 !README.md
 !LICENSE
 !*.md
+
+# Whitelist python source files
+!python/
+!python/*.py
