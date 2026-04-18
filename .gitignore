@@ -1,0 +1,14 @@
+# Ignore everything
+/*
+/*/
+.*
+
+# Whitelist git files
+!.gitignore
+!.github/
+
+# Whitelist source files and documentation
+!*.py
+!README.md
+!LICENSE
+!*.md
