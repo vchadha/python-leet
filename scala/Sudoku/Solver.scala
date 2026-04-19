@@ -14,9 +14,6 @@ case class SolverState(
 // Map of blank locations to filled number
 type Solution = Map[Location, Filled]
 
-// TODO: move to file with helper function to check if two locs are peers
-case class Location(row: Int, col: Int)
-
 object Solution {
 
   /** Solves a given Sudoku puzzle by filling the blank cells. Modifies the
@@ -102,30 +99,27 @@ object Solution {
         // Try each possible value for this cell
         case NonEmpty(values) =>
           values.foldLeft(Option.empty[Solution]) {
-            case (found @ Some(_), _)  => found
+            case (soln @ Some(_), _)  => soln
             case (None, possibleValue) =>
-              val row = bestBlank.row
-              val col = bestBlank.col
-              val boxIndex = Utils.getBoxIndex(bestBlank)
-
-              // Update solution sets
+              // Remove best blank from list of location
               val newBlankLocations =
                 solverState.blankCells.filter(_ != bestBlank)
+
+              // Remove best blank from list of candidates
+              // and update each peer
               val newCandidates =
                 (solverState.candidates - bestBlank).map {
                   case (loc, candidates) =>
-                    val sameRow = loc.row == row
-                    val sameCol = loc.col == col
-                    val sameBox = Utils.getBoxIndex(loc) == boxIndex
-                    val isPeer = sameRow || sameCol || sameBox
-                    if isPeer then
+                    if Location.isPeer(bestBlank, loc) then
                       loc -> Candidates.remove(
                         candidates = candidates,
                         value = possibleValue
                       )
+                    // If not a peer, do not update
                     else loc -> candidates
                 }
 
+              // Call solve with new solution and add placed value to solution map
               solve(SolverState(newBlankLocations, newCandidates)).map(
                 _ + (bestBlank -> possibleValue)
               )
