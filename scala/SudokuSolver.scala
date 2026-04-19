@@ -1,3 +1,26 @@
+// Sealed trait to represent candidates for a cell
+sealed trait Candidates
+case object Empty extends Candidates
+case class NonEmpty(values: Set[Char]) extends Candidates
+
+object Candidates {
+  // Smart constructor — returns Empty if the set is empty
+  def apply(values: Set[Char]): Candidates =
+    if values.isEmpty then Empty
+    else NonEmpty(values)
+
+  // Remove a value, collapsing to Empty if needed
+  def remove(candidates: Candidates, value: Char): Candidates =
+    candidates match
+      case Empty              => Empty
+      case NonEmpty(values)   => Candidates(values - value)
+
+  def size(candidates: Candidates): Int =
+    candidates match
+      case Empty            => 0
+      case NonEmpty(values) => values.size
+}
+
 object Solution {
   // Constants for the Sudoku board
   val BoardSize: Int = 9
@@ -39,9 +62,9 @@ object Solution {
       val col = location._2
       val boxIndex = getBoxIndex(row, col)
 
-      location -> (PossibleDigits -- rowSets(location._1) -- colSets(
-        location._2
-      ) -- boxSets(getBoxIndex(location._1, location._2)))
+      val possibleValues = PossibleDigits -- rowSets(row) -- colSets(col) -- boxSets(boxIndex)
+
+      location -> Candidates(possibleValues)
     }.toMap
 
     // Populate the board with values until we find a solution
@@ -207,60 +230,61 @@ object Solution {
       colSets: Vector[Set[Char]],
       boxSets: Vector[Set[Char]],
       emptyCellLocationSet: List[(Int, Int)],
-      emptyCellSolutionSet: Map[(Int, Int), Set[Char]]
+      emptyCellSolutionSet: Map[(Int, Int), Candidates]
   ): Boolean = {
     // Base case - if there are no more blank spaces, we have solved the board
     if emptyCellLocationSet.isEmpty then true
     // Otherwise we must place a value in the next blank
     else
       // Find blank cell with the least number of candidates to try first
-      val bestBlank = emptyCellLocationSet.minBy(location =>
-        emptyCellSolutionSet.get(location).fold(0)(_.size)
-      )
-      val bestBlankSolutionSet = emptyCellSolutionSet.get(bestBlank).get
+      val bestBlank = emptyCellLocationSet.minBy(loc => Candidates.size(emptyCellSolutionSet(loc)))
 
-      // Try each possible value for this cell
-      bestBlankSolutionSet.exists { possibleValue =>
-        val row = bestBlank._1
-        val col = bestBlank._2
-        val boxIndex = getBoxIndex(row, col)
+      emptyCellSolutionSet(bestBlank) match
+        case Empty => false // No candidates for this cell, backtrack
+        case NonEmpty(values) =>
+          // Try each possible value for this cell
+          values.exists { possibleValue =>
+            val row = bestBlank._1
+            val col = bestBlank._2
+            val boxIndex = getBoxIndex(row, col)
 
-        // Place the value
-        board(row)(col) = possibleValue
+            // Place the value
+            board(row)(col) = possibleValue
 
-        // Update solution sets
-        val newRowSets = rowSets.updated(row, rowSets(row) + possibleValue)
-        val newColSets = colSets.updated(col, colSets(col) + possibleValue)
-        val newBoxSets =
-          boxSets.updated(boxIndex, boxSets(boxIndex) + possibleValue)
-        val newEmptyCellLocationSet =
-          emptyCellLocationSet.filter(_ != bestBlank)
-        val newEmptyCellSolutionSet = (emptyCellSolutionSet - bestBlank).map {
-          case (loc, candidates) =>
-            val sameRow = loc._1 == row
-            val sameCol = loc._2 == col
-            val sameBox = getBoxIndex(loc._1, loc._2) == boxIndex
-            if sameRow || sameCol || sameBox then
-              loc -> (candidates - possibleValue)
-            else loc -> candidates
-        }
+            // Update solution sets
+            val newRowSets = rowSets.updated(row, rowSets(row) + possibleValue)
+            val newColSets = colSets.updated(col, colSets(col) + possibleValue)
+            val newBoxSets =
+              boxSets.updated(boxIndex, boxSets(boxIndex) + possibleValue)
+            val newEmptyCellLocationSet =
+              emptyCellLocationSet.filter(_ != bestBlank)
+            val newEmptyCellSolutionSet = (emptyCellSolutionSet - bestBlank).map {
+              case (loc, candidates) =>
+                val sameRow = loc._1 == row
+                val sameCol = loc._2 == col
+                val sameBox = getBoxIndex(loc._1, loc._2) == boxIndex
+                val isPeer = sameRow || sameCol || sameBox
+                if isPeer then
+                  loc -> Candidates.remove(candidates = candidates , value = possibleValue)
+                else loc -> candidates
+            }
 
-        // Recursively try to solve the board with this value
-        val isSolved = populateBoard(
-          board,
-          newRowSets,
-          newColSets,
-          newBoxSets,
-          newEmptyCellLocationSet,
-          newEmptyCellSolutionSet
-        )
+            // Recursively try to solve the board with this value
+            val isSolved = populateBoard(
+              board,
+              newRowSets,
+              newColSets,
+              newBoxSets,
+              newEmptyCellLocationSet,
+              newEmptyCellSolutionSet
+            )
 
-        if !isSolved then
-          // Backtrack if this path didn't work
-          board(row)(col) = BlankCell
+            if !isSolved then
+              // Backtrack if this path didn't work
+              board(row)(col) = BlankCell
 
-        isSolved
-      }
+            isSolved
+          }
   }
 
 }
