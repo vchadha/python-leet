@@ -14,7 +14,7 @@ object Solution {
   // Empty as a type
   // NonEmpty as a type that contains the set of possible digits
 
-  // TODO: make naming consistent 
+  // TODO: make naming consistent
   // TODO: improve error handling to give more information
 
   /** Solves a given Sudoku puzzle by filling the empty cells. Modifies the
@@ -27,7 +27,7 @@ object Solution {
   def solveSudoku(board: Array[Array[Char]]): Unit = {
     // Validate the initial board state
     if !validateBoard(board) then
-        throw new IllegalArgumentException("Invalid Sudoku board")
+      throw new IllegalArgumentException("Invalid Sudoku board")
 
     // Initialize sets for rows, columns, and subboxes, and get empty cell locations
     val (rowSets, colSets, boxSets, emptyCellLocationSet) =
@@ -39,19 +39,24 @@ object Solution {
       val col = location._2
       val boxIndex = getBoxIndex(row, col)
 
-      location -> (PossibleDigits -- rowSets(location._1) -- colSets(location._2) -- boxSets(getBoxIndex(location._1, location._2)))
+      location -> (PossibleDigits -- rowSets(location._1) -- colSets(
+        location._2
+      ) -- boxSets(getBoxIndex(location._1, location._2)))
     }.toMap
 
     // Populate the board with values until we find a solution
     if !populateBoard(
-      board,
-      rowSets,
-      colSets,
-      boxSets,
-      emptyCellLocationSet,
-      emptyCellSolutionSet
-    ) then
-      throw new IllegalStateException("No solution exists for the given Sudoku board")
+        board,
+        rowSets,
+        colSets,
+        boxSets,
+        emptyCellLocationSet,
+        emptyCellSolutionSet
+      )
+    then
+      throw new IllegalStateException(
+        "No solution exists for the given Sudoku board"
+      )
   }
 
   /** Validates initial board state. Checks:
@@ -66,7 +71,7 @@ object Solution {
     */
   def validateBoard(board: Array[Array[Char]]): Boolean = {
     // Check if the board is 9x9
-    (board.length != BoardSize || board.exists(_.length != BoardSize))
+    (board.length == BoardSize && board.forall(_.length == BoardSize))
     // Check if all characters are valid (digits or blank)
     && board.forall(row =>
       row.forall(cell => PossibleDigits.contains(cell) || cell == BlankCell)
@@ -210,7 +215,7 @@ object Solution {
     else
       // Find blank cell with the least number of candidates to try first
       val bestBlank = emptyCellLocationSet.minBy(location =>
-        emptyCellSolutionSet.get(location).size
+        emptyCellSolutionSet.get(location).fold(0)(_.size)
       )
       val bestBlankSolutionSet = emptyCellSolutionSet.get(bestBlank).get
 
@@ -230,7 +235,15 @@ object Solution {
           boxSets.updated(boxIndex, boxSets(boxIndex) + possibleValue)
         val newEmptyCellLocationSet =
           emptyCellLocationSet.filter(_ != bestBlank)
-        val newEmptyCellSolutionSet = emptyCellSolutionSet - bestBlank
+        val newEmptyCellSolutionSet = (emptyCellSolutionSet - bestBlank).map {
+          case (loc, candidates) =>
+            val sameRow = loc._1 == row
+            val sameCol = loc._2 == col
+            val sameBox = getBoxIndex(loc._1, loc._2) == boxIndex
+            if sameRow || sameCol || sameBox then
+              loc -> (candidates - possibleValue)
+            else loc -> candidates
+        }
 
         // Recursively try to solve the board with this value
         val isSolved = populateBoard(
@@ -250,4 +263,62 @@ object Solution {
       }
   }
 
+}
+
+object SudokuTest {
+  def main(args: Array[String]): Unit = {
+    val board: Array[Array[Char]] = Array(
+      Array('5', '3', '.', '.', '7', '.', '.', '.', '.'),
+      Array('6', '.', '.', '1', '9', '5', '.', '.', '.'),
+      Array('.', '9', '8', '.', '.', '.', '.', '6', '.'),
+      Array('8', '.', '.', '.', '6', '.', '.', '.', '3'),
+      Array('4', '.', '.', '8', '.', '3', '.', '.', '1'),
+      Array('7', '.', '.', '.', '2', '.', '.', '.', '6'),
+      Array('.', '6', '.', '.', '.', '.', '2', '8', '.'),
+      Array('.', '.', '.', '4', '1', '9', '.', '.', '5'),
+      Array('.', '.', '.', '.', '8', '.', '.', '7', '9')
+    )
+
+    val expected: Array[Array[Char]] = Array(
+      Array('5', '3', '4', '6', '7', '8', '9', '1', '2'),
+      Array('6', '7', '2', '1', '9', '5', '3', '4', '8'),
+      Array('1', '9', '8', '3', '4', '2', '5', '6', '7'),
+      Array('8', '5', '9', '7', '6', '1', '4', '2', '3'),
+      Array('4', '2', '6', '8', '5', '3', '7', '9', '1'),
+      Array('7', '1', '3', '9', '2', '4', '8', '5', '6'),
+      Array('9', '6', '1', '5', '3', '7', '2', '8', '4'),
+      Array('2', '8', '7', '4', '1', '9', '6', '3', '5'),
+      Array('3', '4', '5', '2', '8', '6', '1', '7', '9')
+    )
+
+    println("Input board:")
+    printBoard(board)
+
+    Solution.solveSudoku(board)
+
+    println("\nSolved board:")
+    printBoard(board)
+
+    val passed = board.zip(expected).forall { case (solvedRow, expectedRow) =>
+      solvedRow.sameElements(expectedRow)
+    }
+
+    println(s"\nTest ${if passed then "PASSED ✓" else "FAILED ✗"}")
+
+    if !passed then
+      println("\nExpected board:")
+      printBoard(expected)
+  }
+
+  def printBoard(board: Array[Array[Char]]): Unit = {
+    board.zipWithIndex.foreach { case (row, rowIdx) =>
+      if rowIdx % 3 == 0 && rowIdx != 0 then println("------+-------+------")
+      val rowStr = row.zipWithIndex
+        .map { case (cell, colIdx) =>
+          if colIdx % 3 == 0 && colIdx != 0 then s"| $cell" else s"$cell"
+        }
+        .mkString(" ")
+      println(rowStr)
+    }
+  }
 }
