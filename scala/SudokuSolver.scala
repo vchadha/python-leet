@@ -92,6 +92,7 @@ object Solution {
         getSubBoxCells(board).forall(subBoxCells => isSetValid(subBoxCells))
     }
 
+    // TODO: do i need this?
     /**
       * Get the index of the sub square for a given row and column.
       *
@@ -136,5 +137,25 @@ object Solution {
 
         (rowSets, colSets, subBoxSets, emptyCellLocationSet)
     }
+
+    /**
+      * Populate board with values until we find solution
+      *
+      * @param board Board to solve
+      * @param rowSets Set of all numbers in each row
+      * @param colSets Set of all numbers in each column
+      * @param boxSets Set of all numbers in each subbox
+      * @param emptyCellLocationSet Set of all empty locations
+      * @param emptyCellSolutionSet Set of all possible values for each empty cell
+      * @return True if board is solved, else False
+      */
+    def populateBoard(
+        board: Array[Array[Char]],
+        rowSets: List[Set[Char]],
+        colSets: List[Set[Char]],
+        boxSets: List[Set[Char]],
+        emptyCellLocationSet: List[(Int, Int)],
+        emptyCellSolutionSet: Map[(Int, Int), Set[Char]]
+    ): Boolean = ???
 
 }
