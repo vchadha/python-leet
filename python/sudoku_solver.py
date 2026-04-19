@@ -111,9 +111,8 @@ class Solution:
         best_blank = min(blank_loc_set, key=lambda pos: len(blank_solution_set[pos]))
         best_blank_index = blank_loc_set.index(best_blank)
 
-        current_blank = blank_loc_set[best_blank_index]
-        blank_candidates = blank_solution_set[current_blank]
-        curr_row, curr_col = current_blank
+        blank_candidates = blank_solution_set[best_blank]
+        curr_row, curr_col = best_blank
 
         for candidate in blank_candidates:
             # Create immutable copies of the sets and update them
