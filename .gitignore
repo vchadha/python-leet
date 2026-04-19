@@ -15,3 +15,7 @@
 # Whitelist python source files
 !python/
 !python/*.py
+
+# Whitelist scala source files
+!scala/
+!scala/*.scala
