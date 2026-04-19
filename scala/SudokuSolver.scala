@@ -1,3 +1,9 @@
+object Constants {
+  // Constants for the Sudoku board
+  val BoardSize: Int = 9
+  val BoxSize: Int = 3
+}
+
 // Sealed trait to represent candidates for a cell
 sealed trait Candidates
 case object Empty extends Candidates
@@ -46,6 +52,32 @@ object Filled {
     else None
 }
 
+sealed trait ValidationError {
+  def message: String
+}
+
+object ValidationError {
+  case object InvalidBoardSize extends ValidationError {
+    def message = s"Board must be ${Constants.BoardSize}x${Constants.BoardSize}"
+  }
+
+  case class InvalidCell(row: Int, col: Int, char: Char) extends ValidationError {
+    def message = s"Invalid character '$char' at ($row, $col)"
+  }
+
+  case class DuplicateInRow(row: Int, value: Char) extends ValidationError {
+    def message = s"Duplicate '$value' in row $row"
+  }
+
+  case class DuplicateInCol(col: Int, value: Char) extends ValidationError {
+    def message = s"Duplicate '$value' in col $col"
+  }
+
+  case class DuplicateInBox(box: Int, value: Char) extends ValidationError {
+    def message = s"Duplicate '$value' in box $box"
+  }
+}
+
 object Solution {
   // Constants for the Sudoku board
   val BoardSize: Int = 9
@@ -56,12 +88,7 @@ object Solution {
   // TODO: should this be a set? or something else? indexedSeq?
   val PossibleDigits: Set[Filled] = ('1' to '9').map(Filled.apply).toSet
 
-  // Character representing an empty cell
-  // TODO: do i still need this?
-  // val BlankCell: Cell = Blank
-
   // TODO: make naming consistent
-  // TODO: improve error handling to give more information - use either? zio style? validation? zio validation?
 
   /** Solves a given Sudoku puzzle by filling the empty cells. Modifies the
     * input board in-place.
@@ -75,44 +102,57 @@ object Solution {
     val cellBoard: Array[Array[Cell]] = board.map(_.map(Cell.fromChar))
 
     // Validate the initial board state
-    if !validateBoard(cellBoard) then
-      throw new IllegalArgumentException("Invalid Sudoku board")
+    validateBoard(cellBoard) match
+      case Left(errors) =>
+        val message = errors.map(_.message).mkString("\n")
+        throw new IllegalArgumentException(s"Invalid board:\n$message")
+      case Right(_) =>
+        // Initialize sets for rows, columns, and subboxes, and get empty cell locations
+        val (rowSets, colSets, boxSets, emptyCellLocationSet) =
+          initializeSolutionSets(cellBoard)
 
-    // Initialize sets for rows, columns, and subboxes, and get empty cell locations
-    val (rowSets, colSets, boxSets, emptyCellLocationSet) =
-      initializeSolutionSets(cellBoard)
+        // Create a map of possible values for each empty cell
+        val emptyCellSolutionSet = emptyCellLocationSet.map { location =>
+          val row = location._1
+          val col = location._2
+          val boxIndex = getBoxIndex(row, col)
 
-    // Create a map of possible values for each empty cell
-    val emptyCellSolutionSet = emptyCellLocationSet.map { location =>
-      val row = location._1
-      val col = location._2
-      val boxIndex = getBoxIndex(row, col)
+          val possibleValues =
+            PossibleDigits -- rowSets(row) -- colSets(col) -- boxSets(boxIndex)
 
-      val possibleValues =
-        PossibleDigits -- rowSets(row) -- colSets(col) -- boxSets(boxIndex)
+          location -> Candidates(possibleValues)
+        }.toMap
 
-      location -> Candidates(possibleValues)
-    }.toMap
+        // Populate the board with values until we find a solution
+        if !populateBoard(
+            cellBoard,
+            rowSets,
+            colSets,
+            boxSets,
+            emptyCellLocationSet,
+            emptyCellSolutionSet
+          )
+        then
+          throw new IllegalStateException(
+            "No solution exists for the given Sudoku board"
+          )
 
-    // Populate the board with values until we find a solution
-    if !populateBoard(
-        cellBoard,
-        rowSets,
-        colSets,
-        boxSets,
-        emptyCellLocationSet,
-        emptyCellSolutionSet
-      )
-    then
-      throw new IllegalStateException(
-        "No solution exists for the given Sudoku board"
-      )
+        // Convert the cell board back to characters for the final output
+        for {
+          row <- 0 until BoardSize
+          col <- 0 until BoardSize
+        } board(row)(col) = Cell.toChar(cellBoard(row)(col))
+  }
 
-    // Convert the cell board back to characters for the final output
-    for {
-      row <- 0 until BoardSize
-      col <- 0 until BoardSize
-    } board(row)(col) = Cell.toChar(cellBoard(row)(col))
+  private def findDuplicates(
+    cells: List[Cell],
+    makeError: (Char) => ValidationError
+  ): List[ValidationError] = {
+    val filled = cells.collect { case Filled(d) => d }
+    filled
+      .groupBy(identity)
+      .collect { case (digit, occurrences) if occurrences.length > 1 => makeError(digit) }
+      .toList
   }
 
   /** Validates initial board state. Checks:
@@ -125,21 +165,44 @@ object Solution {
     * @return
     *   True if board is valid else False
     */
-  def validateBoard(board: Array[Array[Cell]]): Boolean = {
+  def validateBoard(board: Array[Array[Cell]]): Either[List[ValidationError], Unit] = {
     // Check if the board is 9x9
-    (board.length == BoardSize && board.forall(_.length == BoardSize))
-    // Check if all characters are valid (digits or blank)
-    && board.forall(row =>
-      row.forall {
-        case Blank     => true // blank is always valid
-        case Filled(d) =>
-          Filled.validDigits.contains(d) // check the char inside
-      }
-    )
-    // Check for duplicates in rows, columns, and boxes
-    && board.forall(row => isSetValid(row.toList))
-    && board.transpose.forall(col => isSetValid(col.toList))
-    && areSubBoxesValid(board)
+    val dimensionErrors: List[ValidationError] =
+      if board.length != BoardSize || board.exists(_.length != BoardSize)
+      then List(ValidationError.InvalidBoardSize)
+      else Nil
+
+    val valueErrors: List[ValidationError] =
+      (for {
+        (row, rowIndex) <- board.zipWithIndex
+        (cell, colIndex) <- row.zipWithIndex
+        error <- cell match {
+          case Blank     => None
+          // TODO: it doesn't seem like we are using fromChar effectively? is it needed? what does that helper function do?
+          case Filled(char) => Option.when(!Filled.validDigits.contains(char))(
+            ValidationError.InvalidCell(rowIndex, colIndex, char)
+          )
+        }
+      } yield error).toList
+
+    val rowErrors: List[ValidationError] =
+      board.zipWithIndex.flatMap { case (row, rowIndex) =>
+        findDuplicates(row.toList, char => ValidationError.DuplicateInRow(rowIndex, char))
+      }.toList
+    
+    val colErrors: List[ValidationError] =
+      board.transpose.zipWithIndex.flatMap { case (col, colIndex) =>
+        findDuplicates(col.toList, char => ValidationError.DuplicateInCol(colIndex, char))
+      }.toList
+
+    val boxErrors: List[ValidationError] =
+      getSubBoxCells(board).zipWithIndex.flatMap { case (box, boxIndex) =>
+        findDuplicates(box, char => ValidationError.DuplicateInBox(boxIndex, char))
+      }.toList
+
+    val allErrors = dimensionErrors ++ valueErrors ++ rowErrors ++ colErrors ++ boxErrors
+
+    if allErrors.isEmpty then Right(()) else Left(allErrors)
   }
 
   /** Determines if a set is valid by checking for no duplicates. Filters out
