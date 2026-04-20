@@ -14,10 +14,12 @@ object Solution {
   def solveSudoku(board: Array[Array[Char]]): Unit = {
     val cellBoard = (
       for {
+        // Perform validations on input board
         cellBoard <- Validation.convertBoard(board)
         _         <- Validation.validateBoard(cellBoard)
       } yield cellBoard
     ) match
+      // Throw error if input is invalid
       case Left(errors) =>
         val message = errors.map(_.message).mkString("\n")
         throw new IllegalArgumentException(s"Invalid board:\n$message")
@@ -39,6 +41,12 @@ object Solution {
         soln.foreach { case (loc, Filled(d)) => board(loc.row)(loc.col) = d }
   }
 
+  /**
+    * Solve board recursively
+    *
+    * @param solverState Information on current blank cells and their possible values
+    * @return Option[SolutionMap] - None if no solution found, otherwise map of blank cells to their set values
+    */
   private def solve(solverState: SolverState): Option[SolutionMap] =
     // If there are no blank cells to traverse return empty map
     // There are no more cells to place
@@ -56,7 +64,7 @@ object Solution {
         case Empty => None
 
         // Try each possible value for this cell
-        case NonEmpty(values) => 
+        case NonEmpty(values) =>
           values.collectFirst(
             Function.unlift { possibleValue =>
               // Remove best blank from list of location
@@ -76,7 +84,11 @@ object Solution {
                   else loc -> candidates
                 }
 
-              solve(SolverState(newBlankLocations, newCandidates)).map(_ + (bestBlank -> possibleValue))
+              // Recursive call with new SolverState
+              solve(SolverState(newBlankLocations, newCandidates)).map(
+                _ + (bestBlank -> possibleValue)
+              )
             }
           )
+
 }

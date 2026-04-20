@@ -1,5 +1,7 @@
 package sudoku
 
+/** Sealed trait for validation errors
+  */
 sealed trait ValidationError {
   def message: String
 }

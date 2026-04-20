@@ -13,6 +13,15 @@ case class SolverState(
 )
 
 object SolverState {
+
+  /**
+    * Get solver state from a board.
+    * Contains list of locations of blank cells.
+    * Contains map of locations to possible candidates for that location.
+    *
+    * @param board Board to get SolverState from
+    * @return SolverState
+    */
   def from(board: Array[Array[Cell]]): SolverState = {
     // Compute set of numbers in rows, cols, and sub boxes
     // These are only used to get possible values for the initial blank cells
@@ -24,6 +33,7 @@ object SolverState {
     val subBoxSets =
       Utils.getSubBoxCells(board).map(CellHelpers.toFilledSet).toVector
 
+    // Get list of locations for all blank cells
     val blankCells =
       board.zipWithIndex.flatMap { case (row, rowIndex) =>
         row.zipWithIndex.collect {
@@ -47,4 +57,5 @@ object SolverState {
       candidates = candidates
     )
   }
+
 }

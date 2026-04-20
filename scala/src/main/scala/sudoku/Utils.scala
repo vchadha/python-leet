@@ -7,7 +7,7 @@ object Utils {
     * @param board
     *   Board to get values from
     * @return
-    *   List of List of Chars. Each list contains the values of a subbox
+    *   List of List of Cell. Each list contains the values of a subbox.
     */
   def getSubBoxCells(board: Array[Array[Cell]]): List[List[Cell]] =
     Constants.SubBoxIndices

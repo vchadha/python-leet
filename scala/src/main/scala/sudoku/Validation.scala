@@ -1,7 +1,16 @@
 package sudoku
 
+/** Object for validation methods
+  */
 object Validation {
 
+  /** Converts board of Array[Array[Char]] to Array[Array[Cell]]
+    *
+    * @param board
+    *   Board to convert
+    * @return
+    *   Fails Left with ValidationErrors or succeeds with Board of Cell Type in Right
+    */
   def convertBoard(
       board: Array[Array[Char]]
   ): Either[List[ValidationError], Array[Array[Cell]]] = {
@@ -21,6 +30,15 @@ object Validation {
     else Left(errors)
   }
 
+  /** Find duplicates in a list of Cells
+    *
+    * @param cells
+    *   List of cells to check
+    * @param makeError
+    *   Error to make if duplicates detected
+    * @return
+    *   List of validation errors if any duplicates are found
+    */
   private def findDuplicates(
       cells: List[Cell],
       makeError: (Char) => ValidationError
@@ -36,13 +54,12 @@ object Validation {
 
   /** Validates initial board state. Checks:
     *   1. board size is 9 x 9
-    *   2. board contains valid characters
-    *   3. board has no duplicates in rows, cols, and subboxes
+    *   2. board has no duplicates in rows, cols, and subboxes
     *
     * @param board
     *   Board to check
     * @return
-    *   True if board is valid else False
+    *   Unit if board is valid else List with all ValidationErrors
     */
   def validateBoard(
       board: Array[Array[Cell]]
