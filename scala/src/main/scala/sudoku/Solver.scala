@@ -41,17 +41,18 @@ object Solution {
         soln.foreach { case (loc, Filled(d)) => board(loc.row)(loc.col) = d }
   }
 
-  /**
-    * Solve board recursively
+  /** Solve board recursively
     *
-    * @param solverState Information on current blank cells and their possible values
-    * @return Option[SolutionMap] - None if no solution found, otherwise map of blank cells to their set values
+    * @param solverState
+    *   Information on current blank cells and their possible values
+    * @return
+    *   Option[SolutionMap] - None if no solution found, otherwise map of blank cells to their set
+    *   values
     */
   private def solve(solverState: SolverState): Option[SolutionMap] =
     // If there are no blank cells to traverse return empty map
     // There are no more cells to place
-    if solverState.blankCells.isEmpty then
-      Some(Map.empty)
+    if solverState.blankCells.isEmpty then Some(Map.empty)
 
     // Otherwise we must place a value in the next blank
     else

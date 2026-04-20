@@ -72,6 +72,9 @@ object Validation {
       then List(ValidationError.InvalidBoardSize)
       else Nil
 
+    // Return early - row/col/box checks will crash on wrong sized boards
+    if dimensionErrors.nonEmpty then return Left(dimensionErrors)
+
     val rowErrors: List[ValidationError] =
       board.zipWithIndex.flatMap { case (row, rowIndex) =>
         findDuplicates(
