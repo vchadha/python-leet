@@ -18,8 +18,6 @@ lazy val root = (project in file("."))
       "-deprecation",
       "-feature",
       "-unchecked",
-      "-Wunused:all",
-      "-Wshadow:all",
       "-Yexplicit-nulls"
     )
   )
