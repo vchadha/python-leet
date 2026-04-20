@@ -51,7 +51,7 @@ object Solution {
     // If there are no blank cells to traverse return empty map
     // There are no more cells to place
     if solverState.blankCells.isEmpty then
-      Some(Map.empty) // TODO: replace this with Solution.Empty or something?
+      Some(Map.empty)
 
     // Otherwise we must place a value in the next blank
     else
