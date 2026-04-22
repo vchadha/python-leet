@@ -9,8 +9,7 @@ package sudoku
   */
 case class Location(row: Int, col: Int):
 
-  /** Function to check if location is a peer of another. Peer is defined as same row or same column
-    * or same subbox.
+  /** Function to check if location is a peer of another. Peer is defined as same row or same column or same subbox.
     *
     * @param other
     *   Location to compare against

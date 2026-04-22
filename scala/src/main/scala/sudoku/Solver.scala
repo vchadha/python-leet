@@ -46,8 +46,7 @@ object Solution {
     * @param solverState
     *   Information on current blank cells and their possible values
     * @return
-    *   Option[SolutionMap] - None if no solution found, otherwise map of blank cells to their set
-    *   values
+    *   Option[SolutionMap] - None if no solution found, otherwise map of blank cells to their set values
     */
   private def solve(solverState: SolverState): Option[SolutionMap] =
     // If there are no blank cells to traverse return empty map

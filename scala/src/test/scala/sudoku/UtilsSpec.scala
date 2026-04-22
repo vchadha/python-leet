@@ -48,8 +48,8 @@ class UtilsSpec extends munit.FunSuite:
     val boxes = Utils.getSubBoxCells(standardBoard)
     // standardBoard top-left box: 5,3,4 / 6,7,2 / 1,9,8
     assertEquals(
-      boxes(0).toSet,
-      Set(
+      boxes(0).toSet[Cell],
+      Set[Cell](
         Filled('5'),
         Filled('3'),
         Filled('4'),
@@ -66,8 +66,8 @@ class UtilsSpec extends munit.FunSuite:
     val boxes = Utils.getSubBoxCells(standardBoard)
     // standardBoard center box rows 3-5, cols 3-5: 7,6,1 / 8,5,3 / 9,2,4
     assertEquals(
-      boxes(4).toSet,
-      Set(
+      boxes(4).toSet[Cell],
+      Set[Cell](
         Filled('7'),
         Filled('6'),
         Filled('1'),
@@ -84,8 +84,8 @@ class UtilsSpec extends munit.FunSuite:
     val boxes = Utils.getSubBoxCells(standardBoard)
     // standardBoard bottom-right box rows 6-8, cols 6-8: 2,8,4 / 6,3,5 / 1,7,9
     assertEquals(
-      boxes(8).toSet,
-      Set(
+      boxes(8).toSet[Cell],
+      Set[Cell](
         Filled('2'),
         Filled('8'),
         Filled('4'),

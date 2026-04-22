@@ -14,8 +14,8 @@ case class SolverState(
 
 object SolverState {
 
-  /** Get solver state from a board. Contains list of locations of blank cells. Contains map of
-    * locations to possible candidates for that location.
+  /** Get solver state from a board. Contains list of locations of blank cells. Contains map of locations to possible
+    * candidates for that location.
     *
     * @param board
     *   Board to get SolverState from
