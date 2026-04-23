@@ -1,28 +1,30 @@
 class Solution:
   def lengthOfLongestSubstring(self, s: str) -> int:
-      
+    """
+    Given a string s, find the length of the longest without duplicate characters.
 
-      in_progress: list[tuple[str, bool]] = []
+    Use a sliding window approach over the string.
+    As we move over the string, keep updating the max valid
+    window we have seen so far.
+    """
 
-      for char in s:
-        for idx, substr_tup in enumerate(in_progress):
-          if char in substr_tup[0] and substr_tup[1] == False:
-            in_progress[idx] = (substr_tup[0], True)
-          elif substr_tup[1] == False:
-            in_progress[idx] = (substr_tup[0] + char, False)
+    seen: set[str] = set()
 
-        # Create new substring
-        in_progress.append((char, False))
+    left: int = 0
+    max_length: int = 0
 
-      # Find max substring length
-      max_substring_length = 0
+    for right, char in enumerate(s):
+      # Keep shifting left bound till window is valid
+      while char in seen:
+        seen.remove(s[left])
+        left += 1
 
-      for substr_tup in in_progress:
-        str_length = len(substr_tup[0])
-        if str_length > max_substring_length:
-          max_substring_length = str_length
+      seen.add(char)
 
-      return max_substring_length
+      # Check for new window max length
+      max_length = max(max_length, right - left + 1)
+
+    return max_length
 
 # Test cases
 # Create a single instance of the solution to run test cases

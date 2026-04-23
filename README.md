@@ -20,6 +20,7 @@ scala/           Scala solutions (sbt project, one package per puzzle)
 | 🪞 Mirror Distance | `mirror_distance_int.py` | |
 | 2️⃣ Two Sum | `two_sum.py` | |
 | ➕ Add Two Numbers | `add_two_numbers.py` | |
+| 🔤 Longest Substring | `longest_substring.py` | |
 
 ## Requirements
 
